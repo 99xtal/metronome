@@ -11,28 +11,31 @@ const bpm = document.getElementById('bpm');
 let stopped = true;
 let metronomeTimerId = null;
 let beatTimers = [];
+let beat = 1;
 let timeSignature = 4;
 
-function playMeasure() {
-    clickHiAudio.play();
-    const timers = [];
-    for (let i = 1; i < timeSignature; i += 1) {
-        timers.push(setTimeout(() => clickLoAudio.play(), MINUTE_IN_MS * i / bpm.value));
+function click() {
+    if (beat === 1) {
+        clickHiAudio.play();
+    } else {
+        clickLoAudio.play();
     }
-    return timers;
+
+    if (beat < timeSignature) {
+        beat += 1;
+    } else {
+        beat = 1;
+    }
 }
 
 playPauseBtn.addEventListener('click', () => {
     if (!stopped) {
         clearInterval(metronomeTimerId);
-        beatTimers.forEach(clearInterval);
     } else {
-        beatTimers = playMeasure();
+        click();
         metronomeTimerId = setInterval(() => {
-            beatTimers.forEach(clearInterval);
-            clickHiAudio.play();
-            beatTimers = playMeasure();
-        }, MINUTE_IN_MS * timeSignature / bpm.value);
+            click();
+        }, MINUTE_IN_MS / bpm.value);
     }
     stopped = !stopped;
     playPauseBtn.innerText = stopped ? 'Play' : 'Pause'
@@ -49,10 +52,8 @@ bpm.addEventListener('change', (e) => {
         beatTimers.forEach(clearInterval);
         clearInterval(metronomeTimerId);
     }
-    beatTimers = playMeasure();
+    click();
     metronomeTimerId = setInterval(() => {
-        beatTimers.forEach(clearInterval);
-        clickHiAudio.play();
-        beatTimers = playMeasure();
-    }, MINUTE_IN_MS * timeSignature / bpm.value);
+        click();
+    }, MINUTE_IN_MS / bpm.value);
 })
