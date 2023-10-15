@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Metronome</title>
+</head>
+<body>
+    <main class="flex-center flex-col">
+        <label id="bpm-label" for="bpm">BPM: 100</label>
+        <input type="range" min="40" max="220" value="100" id="bpm">
+        <button id="play">Play</button>
+    </main>
+    <audio src="assets/metronome_click_lo.mp3" id="click_lo"></audio>
+    <audio src="assets/metronome_click_hi.mp3" id="click_hi"></audio>
+    <script src="index.js" />
+</body>
+</html>
