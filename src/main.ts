@@ -1,5 +1,3 @@
-'use strict';
-
 const MINUTE_IN_MS = 60000;
 
 const clickHiAudio = new Audio('assets/metronome_click_hi.mp3');
@@ -28,24 +26,25 @@ function click() {
     }
 }
 
-playPauseBtn.addEventListener('click', () => {
+playPauseBtn?.addEventListener('click', () => {
     if (!stopped) {
         clearInterval(metronomeTimerId);
     } else {
         click();
         metronomeTimerId = setInterval(() => {
             click();
-        }, MINUTE_IN_MS / bpm.value);
+        }, MINUTE_IN_MS / bpm?.value);
     }
     stopped = !stopped;
     playPauseBtn.innerText = stopped ? 'Play' : 'Pause'
 })
 
-bpm.addEventListener('input', (e) => {
-    bpmLabel.innerText = `BPM: ${e.target.value}`
+bpm?.addEventListener('input', (e) => {
+    if (!bpmLabel) return;
+    bpmLabel.innerText = `BPM: ${e?.target?.value}`
 })
 
-bpm.addEventListener('change', (e) => {
+bpm?.addEventListener('change', (e) => {
     if (stopped) return;
 
     if (metronomeTimerId) {
