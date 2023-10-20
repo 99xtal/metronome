@@ -4,7 +4,7 @@
   "description": "A simple metronome web app",
   "main": "index.js",
   "scripts": {
-    "build": "cp -r ./public ./dist && rollup --config",
+    "build": "cp -r ./public/. ./dist && rollup --config",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
