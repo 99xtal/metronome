@@ -1,58 +1,108 @@
-const MINUTE_IN_MS = 60000;
+const lookahead = 25.0; // How frequently to call scheduling function (ms)
+const notesInQueue = [];
+const scheduleAheadTime = 0.1   // How far ahead to schedule audio (sec)
 
-const clickHiAudio = new Audio('assets/metronome_click_hi.mp3');
-const clickLoAudio = new Audio('assets/metronome_click_lo.mp3');
+let audioContext: AudioContext | undefined;
+let bpmLabel: HTMLElement | null;
+let bpmSlider: HTMLElement | null;
+let clickLoSample: AudioBuffer;
+let clickHiSample: AudioBuffer;
+let currentNote = 0;
+let isPlaying = false;
+let nextNoteTime = 0.0;
+let playButton: HTMLElement | null;
+let tempo = 100;
+let timerId: number | undefined;
 
-const playPauseBtn = document.getElementById('play');
-const bpmLabel = document.getElementById('bpm-label')
-const bpm = document.getElementById('bpm');
-let stopped = true;
-let metronomeTimerId = null;
-let beatTimers = [];
-let beat = 1;
-let timeSignature = 4;
+async function loadSamples(audioContext: AudioContext) {
+    clickHiSample = await getFile(audioContext, 'assets/metronome_click_hi.mp3');
+    clickLoSample = await getFile(audioContext, 'assets/metronome_click_lo.mp3');
+}
 
-function click() {
-    if (beat === 1) {
-        clickHiAudio.play();
+async function getFile(audioContext: AudioContext, filepath: string) {
+    const response = await fetch(filepath);
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    return audioBuffer;
+}
+
+async function playSample(audioContext: AudioContext, audioBuffer: AudioBuffer, time: number) {
+    const source = new AudioBufferSourceNode(audioContext, {
+        buffer: audioBuffer,
+    });
+    source.connect(audioContext.destination);
+    source.start(time);
+    return source;
+}
+
+function nextNote() {
+    const secondsPerBeat = 60.0 / tempo;
+
+    nextNoteTime += secondsPerBeat;
+
+    currentNote = (currentNote + 1) % 4;
+}
+
+function scheduleNote(time: number) {
+    if (!audioContext) return;
+
+    if (currentNote === 0) {
+        playSample(audioContext, clickHiSample, time);
     } else {
-        clickLoAudio.play();
-    }
-
-    if (beat < timeSignature) {
-        beat += 1;
-    } else {
-        beat = 1;
+        playSample(audioContext, clickLoSample, time);
     }
 }
 
-playPauseBtn?.addEventListener('click', () => {
-    if (!stopped) {
-        clearInterval(metronomeTimerId);
+function scheduler() {
+    if (!audioContext) return;
+
+    while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
+        scheduleNote(nextNoteTime);
+        nextNote();
+    }
+    timerId = setTimeout(scheduler, lookahead);
+}
+
+function play() {
+    if (!audioContext) {
+        audioContext = new AudioContext();
+    }
+    isPlaying = !isPlaying;
+
+    if (isPlaying) {
+        nextNoteTime = audioContext.currentTime;
+        scheduler(); // kick off scheduling
+        return "Pause"
     } else {
-        click();
-        metronomeTimerId = setInterval(() => {
-            click();
-        }, MINUTE_IN_MS / bpm?.value);
+        clearTimeout(timerId);
+        return "Play"
     }
-    stopped = !stopped;
-    playPauseBtn.innerText = stopped ? 'Play' : 'Pause'
-})
+};
 
-bpm?.addEventListener('input', (e) => {
-    if (!bpmLabel) return;
-    bpmLabel.innerText = `BPM: ${e?.target?.value}`
-})
+function init() {
+    playButton = document.getElementById('play');
+    bpmLabel = document.getElementById('bpm-label')
+    bpmSlider = document.getElementById('bpm');
+    audioContext = new AudioContext();
 
-bpm?.addEventListener('change', (e) => {
-    if (stopped) return;
+    loadSamples(audioContext).then(() => {
 
-    if (metronomeTimerId) {
-        beatTimers.forEach(clearInterval);
-        clearInterval(metronomeTimerId);
-    }
-    click();
-    metronomeTimerId = setInterval(() => {
-        click();
-    }, MINUTE_IN_MS / bpm.value);
-})
+        playButton?.addEventListener('click', (e: Event) => {
+            if (!e.target) return;
+            (e.target as HTMLButtonElement).innerText = play();
+        })
+    
+        bpmSlider?.addEventListener('change', (e: Event) => {
+            tempo = parseInt((e.target as HTMLInputElement).value);
+        })
+    
+        bpmSlider?.addEventListener('input', (e: Event) => {
+            if (!bpmLabel) return;
+    
+            const target = e.target as HTMLInputElement;
+            bpmLabel.innerText = `BPM: ${target.value}`
+        })
+    });
+}
+
+window.addEventListener('load', init)
