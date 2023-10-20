@@ -7,9 +7,14 @@
     <title>Metronome</title>
 </head>
 <body>
-    <main class="flex-center flex-col">
+    <main class="flex-center flex-col flex-gap-sm">
         <label id="bpm-label" for="bpm">BPM: 100</label>
         <input type="range" min="40" max="220" value="100" id="bpm">
+        <form id="options">
+            <input type="radio" name="time-signature" value="2">2/4</input>
+            <input type="radio" name="time-signature" value="3">3/4</input>
+            <input type="radio" name="time-signature" value="4" checked="true">4/4</input>
+        </form>
         <button id="play">Play</button>
     </main>
     <footer>

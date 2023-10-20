@@ -3,6 +3,7 @@ const notesInQueue = [];
 const scheduleAheadTime = 0.1   // How far ahead to schedule audio (sec)
 
 let audioContext: AudioContext | undefined;
+let beatsPerMeasure = 4;
 let bpmLabel: HTMLElement | null;
 let bpmSlider: HTMLElement | null;
 let clickLoSample: AudioBuffer;
@@ -10,6 +11,7 @@ let clickHiSample: AudioBuffer;
 let currentNote = 0;
 let isPlaying = false;
 let nextNoteTime = 0.0;
+let optionsForm: HTMLElement | null;
 let playButton: HTMLElement | null;
 let tempo = 100;
 let timerId: number | undefined;
@@ -40,7 +42,7 @@ function nextNote() {
 
     nextNoteTime += secondsPerBeat;
 
-    currentNote = (currentNote + 1) % 4;
+    currentNote = (currentNote + 1) % beatsPerMeasure;
 }
 
 function scheduleNote(time: number) {
@@ -87,10 +89,10 @@ function init() {
     playButton = document.getElementById('play');
     bpmLabel = document.getElementById('bpm-label')
     bpmSlider = document.getElementById('bpm');
+    optionsForm = document.getElementById('options');
     audioContext = new AudioContext();
 
     loadSamples(audioContext).then(() => {
-
         playButton?.addEventListener('click', (e: Event) => {
             if (!e.target) return;
             (e.target as HTMLButtonElement).innerText = play();
@@ -105,6 +107,13 @@ function init() {
     
             const target = e.target as HTMLInputElement;
             bpmLabel.innerText = `BPM: ${target.value}`
+        })
+
+        optionsForm?.addEventListener('change', (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            if (target.name === 'time-signature') {
+                beatsPerMeasure = parseInt(target.value);
+            }
         })
     });
 }

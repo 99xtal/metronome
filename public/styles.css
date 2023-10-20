@@ -15,6 +15,11 @@ footer {
     width: 100%;
 }
 
+.flex-gap-sm {
+    display: flex;
+    gap: 8px;
+}
+
 .flex-col {
     display: flex;
     flex-direction: column;
