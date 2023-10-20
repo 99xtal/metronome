@@ -8,6 +8,13 @@ main {
     height: 100%;
 }
 
+footer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+
 .flex-col {
     display: flex;
     flex-direction: column;

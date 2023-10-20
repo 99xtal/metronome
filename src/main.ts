@@ -70,6 +70,10 @@ function play() {
     isPlaying = !isPlaying;
 
     if (isPlaying) {
+        if (audioContext.state === "suspended") {
+            audioContext.resume();
+        }
+
         nextNoteTime = audioContext.currentTime;
         scheduler(); // kick off scheduling
         return "Pause"
